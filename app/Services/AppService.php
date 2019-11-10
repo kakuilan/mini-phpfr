@@ -11,6 +11,7 @@ namespace App\Services;
 
 use Symfony\Component\Yaml\Yaml;
 use Medoo\Medoo;
+use Redis;
 
 class AppService extends ServiceBase {
 
@@ -33,6 +34,13 @@ class AppService extends ServiceBase {
      * @var Medoo
      */
     private static $db;
+
+
+    /**
+     * redis连接实例
+     * @var Redis
+     */
+    private static $redis;
 
 
     /**
@@ -97,6 +105,37 @@ class AppService extends ServiceBase {
     }
 
 
+    /**
+     * 连接redis
+     */
+    private static function connRedis() {
+        if(is_null(self::$redis)) {
+            $conf = self::getConf('redis');
+            self::$redis = new Redis();
+            self::$redis->connect($conf['host'], $conf['port'], 1, null, 100);
+
+            // 验证
+            if(!empty($conf['password'])) {
+                self::$redis->auth($conf['password']);
+            }
+
+            // 选项
+            self::$redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_NONE);
+            self::$redis->setOption(Redis::OPT_PREFIX, strval($conf['prefix']));
+            self::$redis->select(intval($conf['select']));
+        }
+    }
+
+
+    /**
+     * 获取redis连接实例
+     * @return Redis
+     */
+    public static function getRedis() {
+        return self::$redis;
+    }
+
+
 
     /**
      * 应用初始化
@@ -104,6 +143,7 @@ class AppService extends ServiceBase {
     public static function init() {
         self::loadConf();
         self::connDb();
+        self::connRedis();
 
     }
 
@@ -114,6 +154,7 @@ class AppService extends ServiceBase {
     public static function runWebApp() {
         self::init();
         echo 'hello world';
+        var_dump(self::$redis);
 
     }
 
