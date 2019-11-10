@@ -21,6 +21,7 @@
     "nikic/fast-route": "^1.3",
     "catfan/medoo": "^1.7",
     "fzaninotto/faker": "^1.8",
-    "kakuilan/kphplib": "^0.1.5"
+    "kakuilan/kphplib": "^0.1.5",
+    "twig/twig": "^2.12"
   }
 }
