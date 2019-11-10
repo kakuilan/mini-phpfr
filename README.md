@@ -7,6 +7,7 @@ mini-phpfr 迷你php框架
 │   ├── Controllers
 │   ├── Services
 │   └── Views
+├── bootstrap
 ├── config
 ├── data
 ├── public
