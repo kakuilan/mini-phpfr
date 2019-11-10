@@ -7,9 +7,9 @@
  * Desc: 入口文件
  */
 
+require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../bootstrap/define.php';
 require __DIR__ . '/../bootstrap/functions.php';
-require __DIR__ . '/../vendor/autoload.php';
 
 date_default_timezone_set('Asia/Shanghai');
 mb_substitute_character('none');
@@ -27,4 +27,5 @@ $logFile = LOGDIR. '/phperr_'. date('Ymd').'.log';
 register_shutdown_function('\Lkk\Helpers\CommonHelper::errorHandler', $logFile);
 
 // 运行app
+App\Services\AppService::setConfDir(CONFDIR);
 App\Services\AppService::runWebApp();

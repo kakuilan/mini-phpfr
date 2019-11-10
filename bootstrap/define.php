@@ -20,4 +20,4 @@ define('RUNTDIR',   ROOTDIR .'runtime'      . DS );
 define('VIEWDIR',   APPSDIR .'Views'        . DS ); //视图目录
 define('LOGDIR',    RUNTDIR .'logs'         . DS );
 
-define('DEBUG_OPEN', false); //是否开启调试
+define('DEBUG_OPEN', true); //是否开启调试
