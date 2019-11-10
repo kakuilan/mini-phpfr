@@ -1,0 +1,14 @@
+*.log
+*.patch
+*.pid
+.DS_Store
+.buildpath
+.git
+.gitee
+.idea
+.nyc_output
+.project
+.settings
+.user.ini
+.vscode
+_gsdata_
