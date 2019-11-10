@@ -24,6 +24,7 @@
     "kakuilan/kphplib": "^0.1.5",
     "twig/twig": "^2.12",
     "voku/anti-xss": "^4.1",
-    "jenssegers/agent": "^2.6"
+    "jenssegers/agent": "^2.6",
+    "symfony/yaml": "^4.3"
   }
 }
