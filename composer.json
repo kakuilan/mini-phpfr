@@ -22,6 +22,8 @@
     "catfan/medoo": "^1.7",
     "fzaninotto/faker": "^1.8",
     "kakuilan/kphplib": "^0.1.5",
-    "twig/twig": "^2.12"
+    "twig/twig": "^2.12",
+    "voku/anti-xss": "^4.1",
+    "jenssegers/agent": "^2.6"
   }
 }
