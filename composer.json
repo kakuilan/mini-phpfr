@@ -1,0 +1,20 @@
+{
+  "name": "kakuilan/mini-phpfr",
+  "description": "mini-phpfr 迷你php框架",
+  "keywords": [
+    "php",
+    "迷你框架"
+  ],
+  "homepage": "https://github.com/kakuilan/mini-phpfr",
+  "license": "Apache License",
+  "authors": [
+    {
+      "name": "kakuilan",
+      "email": "kakuilan@163.com",
+      "homepage": "https://github.com/kakuilan"
+    }
+  ],
+  "require": {
+    "php": "^7.2"
+  }
+}

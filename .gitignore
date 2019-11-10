@@ -12,3 +12,6 @@
 .user.ini
 .vscode
 _gsdata_
+
+runtime
+vendor
