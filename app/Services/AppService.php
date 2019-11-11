@@ -198,6 +198,8 @@ class AppService extends ServiceBase {
     public static function runWebApp() {
         self::init();
         echo 'hello world';
+        echo lang(200);
+
 
 
     }
