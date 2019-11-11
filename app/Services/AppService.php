@@ -10,6 +10,8 @@
 namespace App\Services;
 
 use Medoo\Medoo;
+use Monolog\Handler\RotatingFileHandler;
+use Monolog\Logger;
 use Redis;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
@@ -156,6 +158,27 @@ class AppService extends ServiceBase {
     }
 
 
+    /**
+     * 获取日志对象
+     * @param string|null $logname
+     * @return Logger
+     */
+    public static function getLogger(string $logname = null) {
+        static $loggers;
+        if(empty($logname)) $logname = 'debug';
+
+        if(!isset($loggers[$logname]) || is_null($loggers[$logname])) {
+            $logfile = LOGDIR . "{$logname}.log";
+            $conf = self::getConf('logs');
+
+            $logger = new Logger($logname);
+            $logger->pushHandler(new RotatingFileHandler($logfile , intval($conf['log_max_files']), Logger::INFO));
+            $loggers[$logname] = $logger;
+        }
+
+        return $loggers[$logname];
+    }
+
 
     /**
      * 应用初始化
@@ -164,6 +187,7 @@ class AppService extends ServiceBase {
         self::loadConf();
         self::connDb();
         self::connRedis();
+        self::getLogger()->info('test');
 
     }
 
