@@ -25,7 +25,8 @@
     "twig/twig": "^2.12",
     "voku/anti-xss": "^4.1",
     "jenssegers/agent": "^2.6",
-    "symfony/yaml": "^4.3"
+    "symfony/yaml": "^4.3",
+    "hassankhan/config": "^2.1"
   },
   "autoload": {
     "psr-4": {
