@@ -9,9 +9,14 @@
 
 namespace App\Services;
 
-use Symfony\Component\Yaml\Yaml;
 use Medoo\Medoo;
 use Redis;
+use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
+use PDOException;
+use RedisException;
+use Exception;
+use Throwable;
 
 class AppService extends ServiceBase {
 
@@ -60,7 +65,12 @@ class AppService extends ServiceBase {
     private static function loadConf() {
         if(is_null(self::$conf)) {
             $dir = empty(self::$confDir) ? CONFDIR : self::$confDir;
-            self::$conf = Yaml::parseFile($dir . 'conf.yml');
+            $file = 'conf.yml';
+            try {
+                self::$conf = Yaml::parseFile($dir . $file);
+            } catch (ParseException $exception) {
+                die("config file [{$file}] does not exist.");
+            }
         }
     }
 
@@ -82,16 +92,21 @@ class AppService extends ServiceBase {
     private static function connDb() {
         if(is_null(self::$db)) {
             $conf = self::getConf('database');
-            self::$db = new Medoo([
-                'database_type' => $conf['type'],
-                'database_name' => $conf['dbname'],
-                'server' => $conf['host'],
-                'username' => $conf['user'],
-                'password' => $conf['password'],
-                'charset' => $conf['charset'],
-                'port' => $conf['port'],
-                'prefix' => $conf['prefix'],
-            ]);
+
+            try{
+                self::$db = new Medoo([
+                    'database_type' => $conf['type'],
+                    'database_name' => $conf['dbname'],
+                    'server' => $conf['host'],
+                    'username' => $conf['user'],
+                    'password' => $conf['password'],
+                    'charset' => $conf['charset'],
+                    'port' => $conf['port'],
+                    'prefix' => $conf['prefix'],
+                ]);
+            }catch (Exception $e) {
+                die("database [{$conf['type']}] connection fail.");
+            }
         }
     }
 
@@ -111,18 +126,23 @@ class AppService extends ServiceBase {
     private static function connRedis() {
         if(is_null(self::$redis)) {
             $conf = self::getConf('redis');
-            self::$redis = new Redis();
-            self::$redis->connect($conf['host'], $conf['port'], 1, null, 100);
 
-            // 验证
-            if(!empty($conf['password'])) {
-                self::$redis->auth($conf['password']);
+            try {
+                self::$redis = new Redis();
+                self::$redis->connect($conf['host'], $conf['port'], 1, null, 100);
+
+                // 验证
+                if(!empty($conf['password'])) {
+                    self::$redis->auth($conf['password']);
+                }
+
+                // 选项
+                self::$redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_NONE);
+                self::$redis->setOption(Redis::OPT_PREFIX, strval($conf['prefix']));
+                self::$redis->select(intval($conf['select']));
+            }catch (Exception $e) {
+                die("redis connection fail.");
             }
-
-            // 选项
-            self::$redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_NONE);
-            self::$redis->setOption(Redis::OPT_PREFIX, strval($conf['prefix']));
-            self::$redis->select(intval($conf['select']));
         }
     }
 
@@ -154,7 +174,7 @@ class AppService extends ServiceBase {
     public static function runWebApp() {
         self::init();
         echo 'hello world';
-        var_dump(self::$redis);
+
 
     }
 

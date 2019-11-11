@@ -7,3 +7,8 @@
  * Desc: 常用函数
  */
 
+
+function getExceptionMsg(Throwable $e) {
+    $msg = $e->getMessage() . ' ##code:' . $e->getCode() . ' ##file:' . $e->getFile() . ' ##line:' . $e->getLine();
+    return $msg;
+}
