@@ -12,7 +12,11 @@ namespace App\Controllers;
 class Home extends BaseController {
 
     public function homeAction() {
-        die('Hello world!');
+        $data = [
+            'msg'=>'hello world!',
+        ];
+        $this->assignView($data);
+        $this->render();
     }
 
 

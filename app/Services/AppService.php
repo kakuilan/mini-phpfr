@@ -17,7 +17,6 @@ use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 use FastRoute\RouteCollector;
 use FastRoute\Dispatcher;
-use function FastRoute\simpleDispatcher;
 use function FastRoute\cachedDispatcher;
 use App\Controllers\Home;
 use PDOException;
@@ -200,6 +199,7 @@ class AppService extends ServiceBase {
      */
     public static function dispactch() {
         $dispatcher = cachedDispatcher(function(RouteCollector $r) {
+            //默认路由
             $r->addRoute('GET', '/', 'Home@index');
             $r->addRoute('GET', '/home', 'Home@index');
             $r->addRoute('GET', '/home/index', 'Home@index');
@@ -231,13 +231,14 @@ class AppService extends ServiceBase {
                 $handler = $routeInfo[1];
                 list($class, $action) = explode("@", $handler, 2);
 
-                $action .= 'Action';
+                $method = $action . 'Action';
                 $ctlCls = '\App\Controllers\\' . ucfirst($class);
 
                 if(class_exists($ctlCls)) {
                     $ctlObj = new $ctlCls;
-                    if(method_exists($ctlObj, $action)) {
-                        call_user_func_array([$ctlObj, $action], []);
+                    if(method_exists($ctlObj, $method)) {
+                        $ctlObj->setAction(strtolower($action));
+                        call_user_func_array([$ctlObj, $method], []);
                     }else{
                         self::notfound404();
                     }

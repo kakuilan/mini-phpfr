@@ -26,3 +26,8 @@ logs:
 
 # lang
 lang: 'zh-CN'
+
+# twig
+twig:
+  view_suffix: '.html'
+  cache_dir: 'volt'

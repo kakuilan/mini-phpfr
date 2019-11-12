@@ -11,6 +11,14 @@
 namespace App\Controllers;
 
 use Lkk\LkkObject;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
+use Twig\TwigFilter;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
+use App\Services\AppService;
+use Exception;
 
 class BaseController extends  LkkObject {
 
@@ -26,6 +34,27 @@ class BaseController extends  LkkObject {
     ];
 
 
+    /**
+     * 当前动作
+     * @var string
+     */
+    private $action = '';
+
+
+    /**
+     * 视图数据
+     * @var array
+     */
+    protected $viewData = [];
+
+
+    /**
+     * 视图引擎对象
+     * @var Environment
+     */
+    private $view;
+
+
     public function __construct(array $vars = []) {
         parent::__construct($vars);
 
@@ -34,6 +63,24 @@ class BaseController extends  LkkObject {
 
     public function __destruct() {
 
+    }
+
+
+    /**
+     * 设置动作
+     * @param string $action
+     */
+    public function setAction(string $action) {
+        $this->action = $action;
+    }
+
+
+    /**
+     * 获取动作
+     * @return string
+     */
+    public function getAction() {
+        return $this->action;
     }
 
 
@@ -227,6 +274,73 @@ class BaseController extends  LkkObject {
         }
 
         return $val;
+    }
+
+
+    /**
+     * 获取视图对象
+     * @return Environment
+     */
+    public function getViewer() {
+        if(is_null($this->view)) {
+            $conf = AppService::getConf('twig');
+            $loader = new FilesystemLoader(VIEWDIR);
+            $this->view = new Environment($loader, [
+                'cache' => RUNTDIR . $conf['cache_dir'],
+                'auto_reload' => true,
+                'debug' => DEBUG_OPEN,
+            ]);
+        }
+
+        return $this->view;
+    }
+
+
+    /**
+     * 赋值给模板
+     * @param array $data 变量数组
+     * @param bool $reset 是否重置变量
+     */
+    public function assignView(array $data, bool $reset=false) {
+        if($reset) {
+            foreach ($data as $key=>$item) {
+                $this->viewData[$key] = $item;
+            }
+        }else{
+            $this->viewData = array_merge($this->viewData, $data);
+        }
+    }
+
+
+    /**
+     * 渲染视图模板
+     * @param array $data 数据数组
+     * @param string $template 模板名
+     * @param bool $return 是否返回html
+     * @return string
+     */
+    public function render(array $data =[], string $template = '', bool $return=false) {
+        if(empty($template)) {
+            $template = $this->getClassShortName() . "/" . $this->getAction();
+        }
+        $template = ltrim($template, '/');
+
+        $file = $template . AppService::getConf('twig')['view_suffix'];
+        if(!file_exists(VIEWDIR . $file)) {
+            die("template [{$template}] not exists.");
+        }
+
+        try {
+            $this->viewData = array_merge($this->viewData, $data);
+            $html = $this->getViewer()->render($file, $this->viewData);
+        }catch (Exception $e) {
+
+        }
+        if($return) {
+            return $html;
+        }
+
+        die($html);
     }
 
 
