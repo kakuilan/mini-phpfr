@@ -12,6 +12,7 @@ use Monolog\Logger;
 use Lkk\Helpers\CommonHelper;
 use Lkk\Helpers\UrlHelper;
 use Lkk\Helpers\ValidateHelper;
+use voku\helper\AntiXSS;
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
@@ -266,3 +267,57 @@ function getRemoteImageSize($url, $type = 'curl', $isGetFilesize = false, $lengt
     return $result;
 }
 
+
+/**
+ * 时长格式化
+ * @param int $seconds 秒
+ * @param bool $useSeparator 使用`"分隔符
+ * @return string
+ */
+function secondFormat($seconds, $useSeparator=false){
+    if($useSeparator) {
+        if($seconds<60) {
+            return "{$seconds}\"";
+        }
+        $minu = intval($seconds / 60);
+        $diff = $seconds % 60;
+
+        return "{$minu}'{$diff}\"";
+    }else{
+        $iz=floor($seconds/60);
+        $hz=floor($iz/60);
+        $dz=floor($hz/24);
+        /* 秒 */
+        $s=$seconds%60;
+        /* 分 */
+        $i=floor($iz%60);
+        /* 时 */
+        $h=floor($hz/24);
+        /* 天 */
+
+        if($seconds<60){
+            return $seconds.'秒';
+        }else if($iz<60){
+            return $iz.'分'.$s.'秒';
+        }else if($hz<24){
+            return $hz.'小时'.$i.'分'.$s.'秒';
+        }else{
+            return $dz.'天'.$h.'小时'.$i.'分'.$s.'秒';
+        }
+    }
+}
+
+
+/**
+ * 获取AntiXSS
+ * @return AntiXSS
+ */
+function getXssObj() {
+    static $obj;
+
+    if(is_null($obj)) {
+        $obj = new AntiXSS();
+    }
+
+    return $obj;
+}

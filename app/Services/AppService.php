@@ -15,6 +15,11 @@ use Monolog\Logger;
 use Redis;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
+use FastRoute\RouteCollector;
+use FastRoute\Dispatcher;
+use function FastRoute\simpleDispatcher;
+use function FastRoute\cachedDispatcher;
+use App\Controllers\Home;
 use PDOException;
 use RedisException;
 use Exception;
@@ -187,9 +192,71 @@ class AppService extends ServiceBase {
         self::loadConf();
         self::connDb();
         self::connRedis();
-        self::getLogger()->info('test');
-
     }
+
+
+    /**
+     * 路由分发
+     */
+    public static function dispactch() {
+        $dispatcher = cachedDispatcher(function(RouteCollector $r) {
+            $r->addRoute('GET', '/', 'Home@index');
+            $r->addRoute('GET', '/home', 'Home@index');
+            $r->addRoute('GET', '/home/index', 'Home@index');
+            $r->addRoute('GET', '/home/home', 'Home@home');
+        }, [
+            'cacheFile' => RUNTDIR . 'cache/route', // 缓存路径,必须设置
+            'cacheDisabled' => DEBUG_OPEN, // 是否禁用缓存
+        ]);
+
+        $httpMethod = $_SERVER['REQUEST_METHOD'];
+        $uri = $_SERVER['REQUEST_URI'];
+        if (false !== $pos = strpos($uri, '?')) {
+            $uri = substr($uri, 0, $pos);
+        }
+        $uri = rawurldecode($uri);
+
+        $routeInfo = $dispatcher->dispatch($httpMethod, $uri);
+        switch ($routeInfo[0]) {
+            case Dispatcher::NOT_FOUND:
+                // 404 Not Found
+                self::notfound404();
+                break;
+            case Dispatcher::METHOD_NOT_ALLOWED:
+                // 405 Method Not Allowed
+                $controller = new Home();
+                $controller->fail(405);
+                break;
+            case Dispatcher::FOUND:
+                $handler = $routeInfo[1];
+                list($class, $action) = explode("@", $handler, 2);
+
+                $action .= 'Action';
+                $ctlCls = '\App\Controllers\\' . ucfirst($class);
+
+                if(class_exists($ctlCls)) {
+                    $ctlObj = new $ctlCls;
+                    if(method_exists($ctlObj, $action)) {
+                        call_user_func_array([$ctlObj, $action], []);
+                    }else{
+                        self::notfound404();
+                    }
+                }else{
+                    self::notfound404();
+                }
+                break;
+        }
+    }
+
+
+    /**
+     * 404页面
+     */
+    private static function notfound404() {
+        $controller = new Home();
+        $controller->fail(404);
+    }
+
 
 
     /**
@@ -197,17 +264,7 @@ class AppService extends ServiceBase {
      */
     public static function runWebApp() {
         self::init();
-        echo 'hello world';
-        echo lang(200);
-
-        $html = RUNTDIR. "temp/test.html";
-        curlDownload("http://google.com", $html);
-
-        $img = 'https://github.githubassets.com/images/spinners/octocat-spinner-128.gif';
-        $size = getRemoteImageSize($img);
-        var_dump('$size:', $size);
-
-
+        self::dispactch();
     }
 
 }
