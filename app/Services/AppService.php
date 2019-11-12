@@ -200,6 +200,12 @@ class AppService extends ServiceBase {
         echo 'hello world';
         echo lang(200);
 
+        $html = RUNTDIR. "temp/test.html";
+        curlDownload("http://google.com", $html);
+
+        $img = 'https://github.githubassets.com/images/spinners/octocat-spinner-128.gif';
+        $size = getRemoteImageSize($img);
+        var_dump('$size:', $size);
 
 
     }
