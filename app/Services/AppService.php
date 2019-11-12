@@ -204,6 +204,19 @@ class AppService extends ServiceBase {
             $r->addRoute('GET', '/home', 'Home@index');
             $r->addRoute('GET', '/home/index', 'Home@index');
             $r->addRoute('GET', '/home/home', 'Home@home');
+
+            //自定义路由
+            $routes = include CONFDIR . 'route.php';
+            if(!empty($routes)) {
+                foreach ($routes as $item) {
+                    $method = strtoupper($item['method'] ?? '');
+                    $path = trim($item['path'] ?? '');
+                    $handler = trim($item['handler'] ?? '');
+                    if(empty($path) || empty($handler)) continue;
+
+                    $r->addRoute($method, $path, $handler);
+                }
+            }
         }, [
             'cacheFile' => RUNTDIR . 'cache/route', // 缓存路径,必须设置
             'cacheDisabled' => DEBUG_OPEN, // 是否禁用缓存
@@ -230,6 +243,9 @@ class AppService extends ServiceBase {
             case Dispatcher::FOUND:
                 $handler = $routeInfo[1];
                 list($class, $action) = explode("@", $handler, 2);
+                if(empty($class) || empty($action)) {
+                    self::notfound404();
+                }
 
                 $method = $action . 'Action';
                 $ctlCls = '\App\Controllers\\' . ucfirst($class);
