@@ -12,6 +12,7 @@
 .user.ini
 .vscode
 _gsdata_
+composer.lock
 
 runtime
 vendor
