@@ -99,18 +99,12 @@ class BaseController extends StrictObject {
             }
             unset($item);
         } elseif (is_string($data)) {
-            $chSpace = '　';
             if ($replaceSpace) {
                 //去除多余的空格和换行符，只保留一个
-                $data = str_replace($chSpace, ' ', $data);
-                $data = preg_replace("/([\s]{2,})/", "\\1", $data);
+                $data = StringHelper::removeSpace($data, false);
             }
 
-            $data = trim($data);
-            //去除首尾中文空格
-            if (mb_strpos($data, $chSpace) === 0) {
-                $data = mb_ereg_replace('(^(　)+([ \r\n\t])*)|(([ \r\n\t])*(　)+$)', '', $data);
-            }
+            $data = StringHelper::trim($data);
         }
 
         return $data;
