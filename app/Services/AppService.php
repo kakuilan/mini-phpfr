@@ -123,9 +123,8 @@ class AppService extends ServiceBase {
      * 连接DB
      */
     private static function connDb(): void {
-        if (is_null(self::$db)) {
-            $conf = self::getConf('database');
-
+        $conf = self::getConf('database');
+        if (is_null(self::$db) && $conf['enable']) {
             try {
                 self::$db = new Medoo([
                     'database_type' => $conf['type'],
@@ -158,9 +157,8 @@ class AppService extends ServiceBase {
      * 连接redis
      */
     private static function connRedis() {
-        if (is_null(self::$redis)) {
-            $conf = self::getConf('redis');
-
+        $conf = self::getConf('redis');
+        if (is_null(self::$redis) && $conf['enable']) {
             try {
                 self::$redis = new Redis();
                 self::$redis->connect($conf['host'], $conf['port'], 1, null, 100);
@@ -201,6 +199,10 @@ class AppService extends ServiceBase {
     }
 
 
+    /**
+     * 路由分发
+     * @throws Exception
+     */
     public static function dispactch() {
         $dispatcher = cachedDispatcher(function (RouteCollector $r) {
             //默认路由
