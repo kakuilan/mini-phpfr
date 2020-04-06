@@ -2,9 +2,9 @@
 /**
  * Created by PhpStorm.
  * User: kakuilan
- * Date: 2019/11/10
- * Time: 13:40
- * Desc: web入口文件
+ * Date: 2020/4/6
+ * Time: 12:34
+ * Desc: cli入口文件
  */
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -28,4 +28,4 @@ register_shutdown_function('\Kph\Helpers\DebugHelper::errorLogHandler', $logFile
 
 // 运行app
 App\Services\AppService::setConfDir(CONFDIR);
-App\Services\AppService::runWebApp();
+App\Services\AppService::runCliApp();

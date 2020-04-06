@@ -77,6 +77,7 @@ class BaseController extends StrictObject {
         $this->action = $action;
     }
 
+
     /**
      * 获取动作
      * @return string

@@ -19,3 +19,12 @@ mini-phpfr 迷你php框架
 │   └── volt
 
 ```
+
+### cli模式运行
+```shell
+php public/cli.php task main/main aa bb cc
+
+#或
+php public/cli.php task main:main aa bb cc
+
+```

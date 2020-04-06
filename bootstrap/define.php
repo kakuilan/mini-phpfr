@@ -20,4 +20,6 @@ define('RUNTDIR',   ROOTDIR .'runtime'      . DS );
 define('VIEWDIR',   APPSDIR .'Views'        . DS ); //视图目录
 define('LOGDIR',    RUNTDIR .'logs'         . DS );
 
+define('APP_NAME', 'MiniApp');
+define('APP_VERSION', '0.0.5');
 define('DEBUG_OPEN', true); //是否开启调试

@@ -10,12 +10,18 @@
 namespace App\Services;
 
 use App\Controllers\Home;
+use App\Tasks\TaskCommand;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 use Medoo\Medoo;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
 use Redis;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 use function FastRoute\cachedDispatcher;
@@ -28,6 +34,13 @@ use Throwable;
  * @package App\Services
  */
 class AppService extends ServiceBase {
+
+
+    /**
+     * 动作名称后缀
+     * @var string
+     */
+    public static $actionSuffix = 'Action';
 
 
     /**
@@ -250,12 +263,12 @@ class AppService extends ServiceBase {
                 break;
             case Dispatcher::FOUND:
                 $handler = $routeInfo[1];
-                list($class, $action) = explode("@", $handler, 2);
+                [$class, $action] = explode("@", $handler, 2);
                 if (empty($class) || empty($action)) {
                     self::notfound404();
                 }
 
-                $method = $action . 'Action';
+                $method = $action . self::$actionSuffix;
                 $ctlCls = '\App\Controllers\\' . ucfirst($class);
 
                 if (class_exists($ctlCls)) {
@@ -289,6 +302,22 @@ class AppService extends ServiceBase {
     public static function runWebApp() {
         self::init();
         self::dispactch();
+    }
+
+
+    /**
+     * 运行cli应用
+     * @throws Exception
+     */
+    public static function runCliApp() {
+        self::init();
+        if (PHP_SAPI !== 'cli') {
+            die('deny!');
+        }
+
+        $app = new Application(APP_NAME, APP_VERSION);
+        $app->add(new TaskCommand());
+        $app->run();
     }
 
 
