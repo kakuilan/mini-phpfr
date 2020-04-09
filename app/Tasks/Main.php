@@ -24,4 +24,13 @@ class Main extends BaseTask {
         $this->output->writeln('succeed!');
     }
 
+
+    /**
+     * 测试
+     */
+    public function testAction() {
+        $msg = "Hello world! ". date('Y-m-d H:i:s');
+        $this->output->writeln($msg);
+    }
+
 }

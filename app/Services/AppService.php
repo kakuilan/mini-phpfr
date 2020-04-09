@@ -13,6 +13,7 @@ use App\Controllers\Home;
 use App\Tasks\TaskCommand;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
+use Kph\Helpers\OsHelper;
 use Medoo\Medoo;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
@@ -311,7 +312,7 @@ class AppService extends ServiceBase {
      */
     public static function runCliApp() {
         self::init();
-        if (PHP_SAPI !== 'cli') {
+        if (!OsHelper::isCliMode()) {
             die('deny!');
         }
 

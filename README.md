@@ -26,5 +26,6 @@ php public/cli.php task main/main aa bb cc
 
 #或
 php public/cli.php task main:main aa bb cc
+php public/cli.php task main:test
 
 ```

@@ -82,7 +82,7 @@ class TaskCommand extends Command {
                 $task = $arr[0];
             }
             if (isset($arr[1])) {
-                $task = $arr[1];
+                $action = $arr[1];
             }
         }
 
