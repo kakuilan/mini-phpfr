@@ -166,7 +166,7 @@ class AppService extends ServiceBase {
      */
     public static function getDb(): Medoo {
         $chk = !is_null(self::$db) && self::$db instanceof Medoo;
-        if ($chk) {
+        if ($chk && OsHelper::isCliMode()) {
             $chk = self::$db->pdo->getAttribute(PDO::ATTR_SERVER_INFO) && self::$db->pdo->getAttribute(PDO::ATTR_CONNECTION_STATUS);
         }
 
