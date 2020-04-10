@@ -18,6 +18,7 @@ use Medoo\Medoo;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
 use Redis;
+use PDO;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,6 +27,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 use function FastRoute\cachedDispatcher;
+use Error;
 use Exception;
 use RedisException;
 use Throwable;
@@ -138,7 +140,7 @@ class AppService extends ServiceBase {
      */
     private static function connDb(): void {
         $conf = self::getConf('database');
-        if (is_null(self::$db) && $conf['enable']) {
+        if ($conf['enable']) {
             try {
                 self::$db = new Medoo([
                     'database_type' => $conf['type'],
@@ -163,6 +165,15 @@ class AppService extends ServiceBase {
      * @return Medoo
      */
     public static function getDb(): Medoo {
+        $chk = !is_null(self::$db) && self::$db instanceof Medoo;
+        if ($chk) {
+            $chk = self::$db->pdo->getAttribute(PDO::ATTR_SERVER_INFO) && self::$db->pdo->getAttribute(PDO::ATTR_CONNECTION_STATUS);
+        }
+
+        if (!$chk) {
+            self::connDb();
+        }
+
         return self::$db;
     }
 
@@ -172,7 +183,7 @@ class AppService extends ServiceBase {
      */
     private static function connRedis() {
         $conf = self::getConf('redis');
-        if (is_null(self::$redis) && $conf['enable']) {
+        if ($conf['enable']) {
             try {
                 self::$redis = new Redis();
                 self::$redis->connect($conf['host'], $conf['port'], 1, null, 100);
