@@ -57,7 +57,7 @@ class TaskCommand extends Command {
         $ret = 0;
         try {
             $this->runTask($output, strval($route), $args);
-        } catch (Error $e) {
+        } catch (Throwable $e) {
             $ret = 1;
             if (OP_DEBUG) {
                 logException($e);

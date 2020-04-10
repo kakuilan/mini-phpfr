@@ -152,7 +152,7 @@ class AppService extends ServiceBase {
                     'port'          => $conf['port'],
                     'prefix'        => $conf['prefix'],
                 ]);
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 $msg = "database [{$conf['type']}] connection fail.";
                 self::getLogger('error')->error($msg);
             }
@@ -197,7 +197,7 @@ class AppService extends ServiceBase {
                 self::$redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_NONE);
                 self::$redis->setOption(Redis::OPT_PREFIX, strval($conf['prefix']));
                 self::$redis->select(intval($conf['select']));
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 $msg = "redis connection fail.";
                 self::getLogger('error')->error($msg);
             }
