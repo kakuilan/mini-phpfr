@@ -106,32 +106,31 @@ class AppService extends ServiceBase {
      * @return array|mixed|null
      */
     public static function getConf(string $key = null) {
-        $res = $key ? (self::$conf[$key] ?? null) : self::$conf;
-        return $res;
+        return $key ? (self::$conf[$key] ?? null) : self::$conf;
     }
 
 
     /**
      * 获取日志对象
-     * @param string|null $logname
+     * @param string|null $logName
      * @return Logger
      */
-    public static function getLogger(string $logname = null): Logger {
+    public static function getLogger(string $logName = null): Logger {
         static $loggers;
-        if (empty($logname)) {
-            $logname = 'debug';
+        if (empty($logName)) {
+            $logName = 'debug';
         }
 
-        if (!isset($loggers[$logname]) || is_null($loggers[$logname])) {
-            $logfile = LOGDIR . "{$logname}.log";
+        if (!isset($loggers[$logName])) {
+            $logfile = LOGDIR . "{$logName}.log";
             $conf    = self::getConf('logs');
 
-            $logger = new Logger($logname);
+            $logger = new Logger($logName);
             $logger->pushHandler(new RotatingFileHandler($logfile, intval($conf['log_max_files']), Logger::INFO));
-            $loggers[$logname] = $logger;
+            $loggers[$logName] = $logger;
         }
 
-        return $loggers[$logname];
+        return $loggers[$logName];
     }
 
 

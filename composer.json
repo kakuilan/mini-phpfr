@@ -18,6 +18,7 @@
     "php": "^7.2",
     "ext-json": "*",
     "ext-mbstring": "*",
+    "ext-pdo": "*",
     "ext-redis": "*",
     "catfan/medoo": "^2.1",
     "hassankhan/config": "^3.0",
