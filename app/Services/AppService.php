@@ -11,14 +11,18 @@ namespace App\Services;
 
 use App\Controllers\Home;
 use App\Tasks\TaskCommand;
+use Error;
+use Exception;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
+use Kph\Exceptions\BaseException;
 use Kph\Helpers\OsHelper;
 use Medoo\Medoo;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
 use PDO;
 use Redis;
+use RedisException;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,11 +30,8 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
-use function FastRoute\cachedDispatcher;
-use Error;
-use Exception;
-use RedisException;
 use Throwable;
+use function FastRoute\cachedDispatcher;
 
 /**
  * Class AppService
@@ -176,6 +177,61 @@ class AppService extends ServiceBase {
         return self::$db;
     }
 
+
+    /**
+     * 执行分块查询
+     * @param int $size 每次数量
+     * @param callable $callback 回调函数,形如 fn(array $rows, int $page):bool
+     * @param string $table
+     * @param $join
+     * @param $columns
+     * @param $where
+     * @return bool
+     * @throws BaseException
+     */
+    public static function queryChunk(int $size, callable $callback, string $table, $join, $columns = null, $where = null): bool {
+        //查询一定要有排序
+        $isColumnsOrder = isset($columns['ORDER']);
+        $isWhereOrder   = isset($where['ORDER']);
+        if (!$isColumnsOrder && !$isWhereOrder) {
+            throw new BaseException('You must specify one order by');
+        }
+
+        $db   = self::getDb();
+        $page = 1;
+        if ($size <= 0) {
+            $size = 10;
+        }
+
+        do {
+            $start      = ($page - 1) * $size;
+            $limitWhere = [
+                'LIMIT' => [$start, $size],
+            ];
+
+            if ($isColumnsOrder) {
+                $columns = array_merge($columns, $limitWhere);
+            } elseif ($isWhereOrder) {
+                $where = array_merge($where, $limitWhere);
+            }
+
+            $rows  = $db->select($table, $join, $columns, $where);
+            $count = count($rows);
+            if ($count == 0) {
+                break;
+            }
+
+            //回调
+            if ($callback($rows, $page) === false) {
+                return false;
+            }
+
+            unset($rows);
+            $page++;
+        } while ($count == $size);
+
+        return true;
+    }
 
     /**
      * 连接redis

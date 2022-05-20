@@ -113,7 +113,3 @@ function getDb(): Medoo {
 function getRedis(): Redis {
     return AppService::getRedis();
 }
-
-function queryChunk() {
-
-}
