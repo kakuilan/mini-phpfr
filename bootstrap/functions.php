@@ -10,7 +10,7 @@
 use App\Services\AppService;
 use voku\helper\AntiXSS;
 use Monolog\Logger;
-
+use Medoo\Medoo;
 
 /**
  * 语言转换
@@ -87,11 +87,33 @@ function getExceptionMsg(Throwable $e): string {
 function logException($e) {
     if (!empty($e)) {
         $logger = getLogger('exception');
-        if($e instanceof Throwable) {
+        if ($e instanceof Throwable) {
             $msg = $e->getMessage() . ' ##code:' . $e->getCode() . ' ##file:' . $e->getFile() . ' ##line:' . $e->getLine();
             $logger->error($msg, $e->getTrace());
-        }else{
+        } else {
             $logger->error(strval($e));
         }
     }
+}
+
+
+/**
+ * 获取数据库连接
+ * @return Medoo
+ */
+function getDb(): Medoo {
+    return AppService::getDb();
+}
+
+
+/**
+ * 获取Redis
+ * @return Redis
+ */
+function getRedis(): Redis {
+    return AppService::getRedis();
+}
+
+function queryChunk() {
+
 }
