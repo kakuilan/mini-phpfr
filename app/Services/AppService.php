@@ -186,10 +186,10 @@ class AppService extends ServiceBase {
      * @param $join
      * @param $columns
      * @param $where
-     * @return bool
+     * @return int
      * @throws BaseException
      */
-    public static function queryChunk(int $size, callable $callback, string $table, $join, $columns = null, $where = null): bool {
+    public static function queryChunk(int $size, callable $callback, string $table, $join, $columns = null, $where = null): int {
         //查询一定要有排序
         $isColumnsOrder = isset($columns['ORDER']);
         $isWhereOrder   = isset($where['ORDER']);
@@ -197,8 +197,9 @@ class AppService extends ServiceBase {
             throw new BaseException('You must specify one order by');
         }
 
-        $db   = self::getDb();
-        $page = 1;
+        $db    = self::getDb();
+        $page  = 1;
+        $total = 0;
         if ($size <= 0) {
             $size = 10;
         }
@@ -217,20 +218,21 @@ class AppService extends ServiceBase {
 
             $rows  = $db->select($table, $join, $columns, $where);
             $count = count($rows);
+            $total += $count;
             if ($count == 0) {
                 break;
             }
 
             //回调
             if ($callback($rows, $page) === false) {
-                return false;
+                return $total;
             }
 
             unset($rows);
             $page++;
         } while ($count == $size);
 
-        return true;
+        return $total;
     }
 
     /**
