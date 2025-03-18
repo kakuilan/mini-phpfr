@@ -10,7 +10,7 @@
 use App\Services\AppService;
 use voku\helper\AntiXSS;
 use Monolog\Logger;
-
+use Medoo\Medoo;
 
 /**
  * 语言转换
@@ -49,7 +49,7 @@ function lang(string $code = '', array $var = []): string {
  * 获取AntiXSS
  * @return AntiXSS
  */
-function getXssObj() {
+function getXssObj(): AntiXSS {
     static $obj;
 
     if (is_null($obj)) {
@@ -62,11 +62,11 @@ function getXssObj() {
 
 /**
  * 获取日志对象
- * @param string $logname
+ * @param string $logName
  * @return Logger
  */
-function getLogger(string $logname = '') {
-    return AppService::getLogger($logname);
+function getLogger(string $logName = ''): Logger {
+    return AppService::getLogger($logName);
 }
 
 
@@ -75,9 +75,8 @@ function getLogger(string $logname = '') {
  * @param Throwable $e
  * @return string
  */
-function getExceptionMsg(Throwable $e) {
-    $msg = $e->getMessage() . ' ##code:' . $e->getCode() . ' ##file:' . $e->getFile() . ' ##line:' . $e->getLine();
-    return $msg;
+function getExceptionMsg(Throwable $e): string {
+    return $e->getMessage() . ' ##code:' . $e->getCode() . ' ##file:' . $e->getFile() . ' ##line:' . $e->getLine();
 }
 
 
@@ -87,12 +86,30 @@ function getExceptionMsg(Throwable $e) {
  */
 function logException($e) {
     if (!empty($e)) {
-        $loger = getLogger('exception');
-        if(is_object($e) && $e instanceof Throwable) {
+        $logger = getLogger('exception');
+        if ($e instanceof Throwable) {
             $msg = $e->getMessage() . ' ##code:' . $e->getCode() . ' ##file:' . $e->getFile() . ' ##line:' . $e->getLine();
-            $loger->error($msg, $e->getTrace());
-        }else{
-            $loger->error(strval($e));
+            $logger->error($msg, $e->getTrace());
+        } else {
+            $logger->error(strval($e));
         }
     }
+}
+
+
+/**
+ * 获取数据库连接
+ * @return Medoo
+ */
+function getDb(): Medoo {
+    return AppService::getDb();
+}
+
+
+/**
+ * 获取Redis
+ * @return Redis
+ */
+function getRedis(): Redis {
+    return AppService::getRedis();
 }

@@ -11,14 +11,18 @@ namespace App\Services;
 
 use App\Controllers\Home;
 use App\Tasks\TaskCommand;
+use Error;
+use Exception;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
+use Kph\Exceptions\BaseException;
 use Kph\Helpers\OsHelper;
 use Medoo\Medoo;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
 use PDO;
 use Redis;
+use RedisException;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,11 +30,8 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
-use function FastRoute\cachedDispatcher;
-use Error;
-use Exception;
-use RedisException;
 use Throwable;
+use function FastRoute\cachedDispatcher;
 
 /**
  * Class AppService
@@ -110,32 +111,31 @@ class AppService extends ServiceBase {
      * @return array|mixed|null
      */
     public static function getConf(string $key = null) {
-        $res = $key ? (self::$conf[$key] ?? null) : self::$conf;
-        return $res;
+        return $key ? (self::$conf[$key] ?? null) : self::$conf;
     }
 
 
     /**
      * 获取日志对象
-     * @param string|null $logname
+     * @param string|null $logName
      * @return Logger
      */
-    public static function getLogger(string $logname = null): Logger {
+    public static function getLogger(string $logName = null): Logger {
         static $loggers;
-        if (empty($logname)) {
-            $logname = 'debug';
+        if (empty($logName)) {
+            $logName = 'debug';
         }
 
-        if (!isset($loggers[$logname]) || is_null($loggers[$logname])) {
-            $logfile = LOGDIR . "{$logname}.log";
+        if (!isset($loggers[$logName])) {
+            $logfile = LOGDIR . "{$logName}.log";
             $conf    = self::getConf('logs');
 
-            $logger = new Logger($logname);
+            $logger = new Logger($logName);
             $logger->pushHandler(new RotatingFileHandler($logfile, intval($conf['log_max_files']), Logger::INFO));
-            $loggers[$logname] = $logger;
+            $loggers[$logName] = $logger;
         }
 
-        return $loggers[$logname];
+        return $loggers[$logName];
     }
 
 
@@ -181,6 +181,63 @@ class AppService extends ServiceBase {
         return self::$db;
     }
 
+
+    /**
+     * 执行分块查询
+     * @param int $size 每次数量
+     * @param callable $callback 回调函数,形如 fn(array $rows, int $page):bool
+     * @param string $table
+     * @param $join
+     * @param $columns
+     * @param $where
+     * @return int
+     * @throws BaseException
+     */
+    public static function queryChunk(int $size, callable $callback, string $table, $join, $columns = null, $where = null): int {
+        //查询一定要有排序
+        $isColumnsOrder = isset($columns['ORDER']);
+        $isWhereOrder   = isset($where['ORDER']);
+        if (!$isColumnsOrder && !$isWhereOrder) {
+            throw new BaseException('You must specify one order by');
+        }
+
+        $db    = self::getDb();
+        $page  = 1;
+        $total = 0;
+        if ($size <= 0) {
+            $size = 10;
+        }
+
+        do {
+            $start      = ($page - 1) * $size;
+            $limitWhere = [
+                'LIMIT' => [$start, $size],
+            ];
+
+            if ($isColumnsOrder) {
+                $columns = array_merge($columns, $limitWhere);
+            } elseif ($isWhereOrder) {
+                $where = array_merge($where, $limitWhere);
+            }
+
+            $rows  = $db->select($table, $join, $columns, $where);
+            $count = count($rows);
+            $total += $count;
+            if ($count == 0) {
+                break;
+            }
+
+            //回调
+            if ($callback($rows, $page) === false) {
+                return $total;
+            }
+
+            unset($rows);
+            $page++;
+        } while ($count == $size);
+
+        return $total;
+    }
 
     /**
      * 连接redis
