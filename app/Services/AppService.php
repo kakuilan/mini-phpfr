@@ -91,10 +91,14 @@ class AppService extends ServiceBase {
         if (is_null(self::$conf)) {
             $dir  = empty(self::$confDir) ? CONFDIR : self::$confDir;
             $file = 'conf.yml';
+            $path = $dir . $file;
+            if(!file_exists($path)) {
+                die("config file [{$path}] does not exist.");
+            }
             try {
-                self::$conf = Yaml::parseFile($dir . $file);
+                self::$conf = Yaml::parseFile($path);
             } catch (ParseException $exception) {
-                die("config file [{$file}] does not exist.");
+                die("parse config fail: ". $exception->getMessage());
             }
         }
     }
